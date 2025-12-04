@@ -1,0 +1,6 @@
+path: C:\Users\samue\OneDrive\Documents\CV Projects\Plate_Reader\yolo_dataset  # Path to dataset (relative to where training runs)
+train: train/images
+val: val/images
+
+nc: 1           # Number of classes
+names: ['plate'] # Class names
