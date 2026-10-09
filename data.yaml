@@ -1,4 +1,4 @@
-path: C:\Users\samue\OneDrive\Documents\CV Projects\Plate_Reader\yolo_dataset  # Path to dataset (relative to where training runs)
+path: yolo_dataset  # relative to the repo root; run prepare_data.py first
 train: train/images
 val: val/images
 

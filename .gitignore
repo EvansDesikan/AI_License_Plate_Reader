@@ -1,0 +1,7 @@
+
+# Datasets and training outputs (download / regenerate, see README)
+dataset/
+yolo_dataset/
+runs/
+yolov8n.pt
+yolo11n.pt

@@ -1,44 +1,57 @@
-# 🚙 AI License Plate Reader (YOLOv8 + EasyOCR)
+# Licence plate reader: YOLOv8 detection + EasyOCR
 
-An advanced Automatic Number Plate Recognition (ANPR) system. Unlike traditional CV methods that rely on edge detection, this project uses a custom-trained **YOLOv8** model to detect plates in challenging conditions and **EasyOCR** to read the characters.
+Detects licence plates in car photos with a fine-tuned **YOLOv8n** and reads the characters with **EasyOCR**.
 
-## 🧠 Project Architecture
-The pipeline consists of two Deep Learning stages:
-1.  **Object Detection (YOLOv8):**
-    * Trained on a dataset of 400+ cars.
-    * detects the location of the license plate even in low light or at angles.
-    * Model weights: `best.pt` (Fine-tuned YOLOv8 Nano).
-2.  **Optical Character Recognition (EasyOCR):**
-    * Takes the cropped plate image.
-    * Uses a ResNet + LSTM network to read the text.
+**Detection results (validation set, 20 epochs, 640 px):**
 
-## 🛠️ Tech Stack
-* **Training:** YOLOv8 (Ultralytics), PyTorch (GPU Accelerated).
-* **Inference:** OpenCV, EasyOCR.
-* **Hardware Used:** NVIDIA RTX 4050 (Training time: ~3 mins for 20 epochs).
+| Precision | Recall | mAP@0.5 | mAP@0.5:0.95 |
+| --- | --- | --- | --- |
+| 0.864 | 0.897 | 0.891 | 0.536 |
 
-## 📸 Demo Result
-| YOLO Crop | Final Detection |
+Training took about 3 minutes on an RTX 4050 laptop GPU. Character-level OCR accuracy has not been measured yet.
+
+| Input | Detection and reading |
 | :---: | :---: |
-| <img src="car.jpg" width="200"> | <img src="demo_result.jpg" width="400"> |
+| <img src="car.jpg" width="220"> | <img src="demo_result.jpg" width="420"> |
 
+<img src="docs/training_curves.png" width="640">
 
-## 🚀 How to Run
-1.  **Clone the repo:**
-    ```bash
-    git clone https://github.com/EvansDesikan/AI_License_Plate_Reader.git
-    cd AI_License_Plate_Reader
-    ```
-2.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  **Run the AI Reader:**
-    ```bash
-    python ai_plate_reader.py
-    ```
+## Pipeline
 
-## 📂 File Structure
-* `train_yolo.py`: Script used to train the model on the Kaggle dataset.
-* `ai_plate_reader.py`: The main inference script that loads `best.pt` and scans images.
-* `best.pt`: The trained YOLO weights.
+1. `prepare_data.py` converts the Pascal VOC XML annotations into YOLO format and splits train/val (creates `yolo_dataset/`).
+2. `train_yolo.py` fine-tunes YOLOv8n (pretrained weights download automatically) on one class, `plate`.
+3. `ai_plate_reader.py` / `plate_scanner.py` detect the plate, crop it and run EasyOCR. `batch_scan.py` processes a folder.
+
+## Run it
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# Inference with the included trained weights (best.pt)
+python ai_plate_reader.py
+
+# Retrain: download the Kaggle "Car License Plate Detection" dataset (433 images, VOC XML),
+# extract it to dataset/images and dataset/annotations, then
+python prepare_data.py
+python train_yolo.py
+```
+
+## Files
+
+| File | Purpose |
+| --- | --- |
+| `best.pt` | Trained detector weights (YOLOv8n, 1 class) |
+| `prepare_data.py` | VOC XML to YOLO conversion and split |
+| `train_yolo.py` | Training |
+| `ai_plate_reader.py`, `plate_scanner.py`, `batch_scan.py` | Detection + OCR |
+| `docs/` | Training curves, precision-recall curve, validation predictions |
+
+## Next steps
+
+- Measure OCR character accuracy on a labelled test set.
+- Export to ONNX/TensorRT and benchmark on a Jetson.
+
+## Tech
+
+Ultralytics YOLOv8 · PyTorch · EasyOCR · OpenCV
